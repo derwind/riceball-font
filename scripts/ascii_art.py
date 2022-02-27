@@ -6,8 +6,8 @@ from fontTools.ttLib import TTFont
 from fontTools.pens.freetypePen import FreeTypePen
 
 class AsciiArtGlyph:
-    def __init__(self, font_path, box_size=(50,50)):
-        self.ttFont = TTFont(font_path)
+    def __init__(self, ttFont, box_size=(50,50)):
+        self.ttFont = ttFont
         self.box_size = box_size
 
     def render_glyph(self, glyph_name, scale=1):
@@ -42,7 +42,7 @@ class AsciiArtGlyph:
                 else:
                     row += '.'
             canvas.append(row)
-        return '\n'.join(canvas)
+        return canvas
 
     def draw_char_image_array(self, glyph, width=None, height=None):
         pen = FreeTypePen(None)
@@ -56,10 +56,10 @@ class AsciiArtGlyph:
         Image.fromarray(image, mode='L').save(filename)
 
 def main():
-    aa = AsciiArtGlyph(sys.argv[1])
+    aag = AsciiArtGlyph(TTFont(sys.argv[1]))
     for glyph_name in ['A', 'B', 'C', 'a', 'b', 'c']:
-        im = aa.render_glyph(glyph_name)
-        print(aa.quantize_as_ascii_art(im))
+        im = aag.render_glyph(glyph_name)
+        print('\n'.join(aag.quantize_as_ascii_art(im)))
 
 if __name__ == '__main__':
     main()
