@@ -6,7 +6,7 @@ from fontTools.ttLib import TTFont
 from fontTools.pens.freetypePen import FreeTypePen
 
 class AsciiArtGlyph:
-    def __init__(self, font_path, box_size = 50):
+    def __init__(self, font_path, box_size=(50,50)):
         self.ttFont = TTFont(font_path)
         self.box_size = box_size
 
@@ -15,7 +15,10 @@ class AsciiArtGlyph:
         width, ascender, descender = glyph.width, self.ttFont['OS/2'].sTypoAscender, self.ttFont['OS/2'].sTypoDescender
         height = ascender - descender
         im = self.draw_char_image_array(glyph, width, height)
-        ceiled_shape = [math.ceil(v / self.box_size) * self.box_size for v in im.shape]
+        ceiled_shape = [
+            math.ceil(im.shape[0] / self.box_size[0]) * self.box_size[0],
+            math.ceil(im.shape[1] / self.box_size[1]) * self.box_size[1]
+        ]
         # [0, 255] to [0, 1]
         background = np.ones(ceiled_shape, dtype=np.uint8) * scale
         for i in range(im.shape[0]):
@@ -27,11 +30,14 @@ class AsciiArtGlyph:
 
     def quantize_as_ascii_art(self, image:np.ndarray):
         canvas = []
-        for i in range(image.shape[0] // self.box_size):
+        for i in range(image.shape[0] // self.box_size[0]):
             row = ''
-            for j in range(image.shape[1] // self.box_size):
-                sub_image = image[self.box_size*i:self.box_size*(i+1), self.box_size*j:self.box_size*(j+1)]
-                if np.sum(sub_image) < self.box_size*self.box_size/2:
+            for j in range(image.shape[1] // self.box_size[1]):
+                sub_image = image[
+                    self.box_size[0]*i:self.box_size[0]*(i+1),
+                    self.box_size[1]*j:self.box_size[1]*(j+1)
+                ]
+                if np.sum(sub_image) < self.box_size[0]*self.box_size[1]/2:
                     row += '*'
                 else:
                     row += '.'
